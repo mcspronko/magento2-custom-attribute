@@ -7,7 +7,12 @@ use Magento\Eav\Setup\EavSetup;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
+use Magento\Eav\Model\Config;
 
+/**
+ * Class InstallData
+ * @package     Devchannel\CustomAttribute\Setup
+ */
 class InstallData implements InstallDataInterface
 {
     /**
@@ -21,13 +26,21 @@ class InstallData implements InstallDataInterface
     private $eavSetup;
 
     /**
+     * @var Config
+     */
+    private $eavConfig;
+
+    /**
      * InstallData constructor.
      * @param EavSetup $eavSetup
+     * @param Config $config
      */
     public function __construct(
-        EavSetup $eavSetup
+        EavSetup $eavSetup,
+        Config $config
     ) {
         $this->eavSetup = $eavSetup;
+        $this->eavConfig = $config;
     }
 
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
@@ -44,10 +57,21 @@ class InstallData implements InstallDataInterface
                 'required' => false,
                 'position' => 150,
                 'sort_order' => 150,
-                'system' => false,
-                'user_defined' => true
+                'system' => false
             ]
         );
+
+        $customAttribute = $this->eavConfig->getAttribute(
+            AddressMetadataInterface::ENTITY_TYPE_ADDRESS,
+            self::CUSTOM_ATTRIBUTE_CODE
+        );
+
+        $customAttribute->setData(
+            'used_in_forms',
+            ['adminhtml_customer_address', 'customer_address_edit', 'customer_register_address']
+        );
+
+        $customAttribute->save();
 
         $setup->endSetup();
     }
